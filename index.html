@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Control de Gastos — Local & Privado</title>
+  
+  <!-- PWA & Mobile Meta Tags -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Gastos">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" type="image/svg+xml" href="icon.svg">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app" class="app-container">
+    
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="header-top">
+        <div class="brand">
+          <div class="brand-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="20" height="14" x="2" y="5" rx="2"/>
+              <line x1="2" x2="22" y1="10" y2="10"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="brand-title">Control de Gastos</h1>
+            <span id="sync-status-badge" class="sync-badge local" title="Tus datos se guardan de forma 100% local en tu dispositivo">
+              <span class="sync-dot"></span>
+              <span class="sync-text">100% Local y Privado</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button id="btn-open-settings" class="icon-btn" aria-label="Ajustes y Datos" title="Ajustes y Copias">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Month Selector Bar (Para la pestaña mensual) -->
+      <div id="month-selector-bar" class="month-selector-bar">
+        <button id="btn-prev-month" class="nav-arrow-btn" aria-label="Mes anterior">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <div class="month-display" id="btn-pick-month">
+          <span id="current-month-label" class="current-month-label">Septiembre 2026</span>
+          <button id="btn-today" class="btn-today-pill" title="Volver al mes actual">Hoy</button>
+        </div>
+        <button id="btn-next-month" class="nav-arrow-btn" aria-label="Mes siguiente">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </div>
+
+      <!-- Desktop Navigation Tabs (en móvil se usa la barra inferior) -->
+      <nav class="desktop-nav">
+        <button class="nav-tab active" data-tab="mensual">
+          <span>📅 Gastos del Mes</span>
+        </button>
+        <button class="nav-tab" data-tab="superfluo">
+          <span>⚡ Gastos Superfluos</span>
+        </button>
+        <button class="nav-tab" data-tab="stats">
+          <span>📊 Resumen & Balance</span>
+        </button>
+      </nav>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="app-main">
+
+      <!-- ================= TAB 1: GASTOS MENSUALES ================= -->
+      <section id="tab-mensual" class="tab-pane active">
+        <!-- Resumen Rápido Mensual -->
+        <div class="summary-cards-grid">
+          <div class="summary-card total-card">
+            <div class="card-label">Total Gasto del Mes</div>
+            <div class="card-amount" id="total-mensual-amount">0,00 €</div>
+            <div class="card-sub" id="total-mensual-count">0 movimientos</div>
+          </div>
+          <div class="summary-card secondary-card">
+            <div class="card-label">Media diaria</div>
+            <div class="card-amount" id="media-diaria-amount">0,00 €</div>
+            <div class="card-sub" id="dias-transcurridos-label">este mes</div>
+          </div>
+        </div>
+
+        <!-- Filtros y Búsqueda -->
+        <div class="filter-search-bar">
+          <div class="search-input-wrapper">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="search-mensual" placeholder="Buscar por concepto o súper...">
+          </div>
+          <select id="filter-cat-mensual" class="filter-select">
+            <option value="todas">Todas las categorías</option>
+            <option value="supermercado">🛒 Supermercado / Comida</option>
+            <option value="deporte">🏋️‍♂️ Deporte / Gimnasio</option>
+            <option value="vivienda">🏠 Vivienda / Alquiler</option>
+            <option value="servicios">💡 Facturas / Suministros</option>
+            <option value="ocio">🍽️ Restaurantes / Ocio</option>
+            <option value="transporte">🚗 Transporte / Gasolina</option>
+            <option value="salud">💊 Farmacia / Salud</option>
+            <option value="otros">📦 Otros recurrentes</option>
+          </select>
+        </div>
+
+        <!-- Lista de Gastos del Mes -->
+        <div id="lista-mensual-container" class="expenses-list-container">
+          <!-- Items generados dinámicamente con JS -->
+        </div>
+      </section>
+
+      <!-- ================= TAB 2: GASTOS SUPERFLUOS ================= -->
+      <section id="tab-superfluo" class="tab-pane">
+        <!-- Banner Informativo -->
+        <div class="info-callout">
+          <div class="callout-icon">⚡</div>
+          <div class="callout-content">
+            <strong>Gastos No Mensuales / Superfluos</strong>
+            <p>Compras que no corresponden al presupuesto mensual habitual (proteína, creatina, ropa deportiva o de calle, tecnología, viajes). Así mantienes intactas tus cuentas del mes a mes.</p>
+          </div>
+        </div>
+
+        <!-- Resumen de Gastos Superfluos -->
+        <div class="summary-cards-grid">
+          <div class="summary-card total-card superfluo-theme">
+            <div class="card-label">Total Acumulado en el Año</div>
+            <div class="card-amount" id="total-superfluo-amount">0,00 €</div>
+            <div class="card-sub" id="total-superfluo-count">0 compras registradas</div>
+          </div>
+          <div class="summary-card secondary-card">
+            <div class="card-label">Amortización teórica</div>
+            <div class="card-amount" id="amortizacion-superfluo-amount">0,00 €/mes</div>
+            <div class="card-sub">repartido en 12 meses</div>
+          </div>
+        </div>
+
+        <!-- Filtro Superfluo -->
+        <div class="filter-search-bar">
+          <div class="search-input-wrapper">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="search-superfluo" placeholder="Buscar proteína, capricho, zapatillas...">
+          </div>
+          <select id="filter-cat-superfluo" class="filter-select">
+            <option value="todas">Todas las categorías</option>
+            <option value="deporte">🏋️‍♂️ Deporte / Suplementación</option>
+            <option value="caprichos">🛍️ Caprichos / Gustos</option>
+            <option value="ropa">👟 Ropa / Calzado</option>
+            <option value="tecnologia">💻 Tecnología / Gadgets</option>
+            <option value="viajes">✈️ Viajes / Escapadas</option>
+            <option value="otros">📦 Otros puntuales</option>
+          </select>
+        </div>
+
+        <!-- Lista de Gastos Superfluos -->
+        <div id="lista-superfluo-container" class="expenses-list-container">
+          <!-- Items generados dinámicamente con JS -->
+        </div>
+      </section>
+
+      <!-- ================= TAB 3: RESUMEN Y BALANCE ================= -->
+      <section id="tab-stats" class="tab-pane">
+        <div class="stats-container">
+          <!-- Comparativa Mensual vs Superfluo -->
+          <div class="stat-box">
+            <h3 class="stat-title">Distribución de Gastos</h3>
+            <div class="comparison-bar-wrapper">
+              <div class="comparison-labels">
+                <span>📅 Habituales (<span id="stats-pct-mensual">0%</span>)</span>
+                <span>⚡ Superfluos (<span id="stats-pct-superfluo">0%</span>)</span>
+              </div>
+              <div class="comparison-track">
+                <div id="bar-mensual" class="bar-fill bar-fill-mensual" style="width: 50%;"></div>
+                <div id="bar-superfluo" class="bar-fill bar-fill-superfluo" style="width: 50%;"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Desglose por Categorías -->
+          <div class="stat-box">
+            <h3 class="stat-title">Gastos por Categoría</h3>
+            <div id="category-breakdown-list" class="category-breakdown-list">
+              <!-- Barras dinámicas de categorías -->
+            </div>
+          </div>
+
+          <!-- Historial de Últimos Meses -->
+          <div class="stat-box">
+            <h3 class="stat-title">Evolución Últimos 6 Meses</h3>
+            <div id="monthly-history-bars" class="monthly-history-bars">
+              <!-- Gráfico dinámico en barras -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Floating Action Button (+) para Añadir Gasto -->
+    <button id="btn-fab-add" class="fab-btn" aria-label="Añadir nuevo gasto">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    </button>
+
+    <!-- Bottom Navigation Bar (Optimizado para móvil nativo) -->
+    <nav class="mobile-bottom-nav">
+      <button class="bottom-nav-item active" data-tab="mensual">
+        <div class="nav-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+            <line x1="16" x2="16" y1="2" y2="6"/>
+            <line x1="8" x2="8" y1="2" y2="6"/>
+            <line x1="3" x2="21" y1="10" y2="10"/>
+          </svg>
+        </div>
+        <span>Mes</span>
+      </button>
+
+      <button class="bottom-nav-item" data-tab="superfluo">
+        <div class="nav-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </div>
+        <span>Superfluos</span>
+      </button>
+
+      <button class="bottom-nav-item" data-tab="stats">
+        <div class="nav-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 3v18h18"/>
+            <path d="m19 9-5 5-4-4-3 3"/>
+          </svg>
+        </div>
+        <span>Balance</span>
+      </button>
+    </nav>
+
+    <!-- ================= MODAL / BOTTOM SHEET: AÑADIR GASTO ================= -->
+    <div id="modal-add-expense" class="modal-backdrop hidden">
+      <div class="modal-sheet">
+        <div class="modal-grab-handle"></div>
+        <div class="modal-header">
+          <h2 id="modal-title">Nuevo Gasto</h2>
+          <button id="btn-close-modal" class="close-btn" aria-label="Cerrar modal">&times;</button>
+        </div>
+
+        <form id="form-expense" class="modal-body">
+          <input type="hidden" id="expense-id">
+
+          <!-- Selector de Tipo: Mensual vs Superfluo -->
+          <div class="form-group">
+            <label class="form-label">Tipo de Gasto</label>
+            <div class="segmented-control">
+              <input type="radio" id="type-mensual" name="expense-type" value="mensual" checked>
+              <label for="type-mensual" class="segment-btn">
+                <span>📅 Del Mes</span>
+              </label>
+
+              <input type="radio" id="type-superfluo" name="expense-type" value="superfluo">
+              <label for="type-superfluo" class="segment-btn">
+                <span>⚡ Superfluo / Extra</span>
+              </label>
+            </div>
+            <p id="type-explanation" class="form-help-text">
+              Gasto recurrente habitual que computa en el mes actual.
+            </p>
+          </div>
+
+          <!-- Importe (€) Grande -->
+          <div class="form-group">
+            <label class="form-label" for="expense-amount">Importe</label>
+            <div class="amount-input-container">
+              <span class="currency-symbol">€</span>
+              <input 
+                type="number" 
+                id="expense-amount" 
+                step="0.01" 
+                min="0.01" 
+                placeholder="0.00" 
+                inputmode="decimal" 
+                required 
+                autofocus
+              >
+            </div>
+          </div>
+
+          <!-- Concepto -->
+          <div class="form-group">
+            <label class="form-label" for="expense-concept">Concepto</label>
+            <input 
+              type="text" 
+              id="expense-concept" 
+              placeholder="Ej: Cuota gimnasio, Mercadona, Proteína..." 
+              required
+              autocomplete="off"
+            >
+            <!-- Sugerencias rápidas -->
+            <div id="quick-concept-chips" class="chip-container">
+              <!-- Sugerencias dinámicas según si es mensual o superfluo -->
+            </div>
+          </div>
+
+          <!-- Categoría -->
+          <div class="form-group">
+            <label class="form-label" for="expense-category">Categoría</label>
+            <select id="expense-category" required>
+              <!-- Opciones dinámicas según tipo -->
+            </select>
+          </div>
+
+          <!-- Fecha -->
+          <div class="form-group">
+            <label class="form-label" for="expense-date">Fecha</label>
+            <input type="date" id="expense-date" required>
+          </div>
+
+          <!-- Notas opcionales -->
+          <div class="form-group">
+            <label class="form-label" for="expense-notes">Notas (Opcional)</label>
+            <input type="text" id="expense-notes" placeholder="Ej: Pago mensual o sabor chocolate 2kg">
+          </div>
+
+          <!-- Botones de Acción -->
+          <div class="modal-actions">
+            <button type="button" id="btn-cancel-expense" class="btn btn-secondary">Cancelar</button>
+            <button type="submit" id="btn-save-expense" class="btn btn-primary">Guardar Gasto</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ================= MODAL: AJUSTES Y COPIAS ================= -->
+    <div id="modal-settings" class="modal-backdrop hidden">
+      <div class="modal-sheet modal-settings-dialog">
+        <div class="modal-header">
+          <h2>Ajustes y Datos</h2>
+          <button id="btn-close-settings" class="close-btn" aria-label="Cerrar ajustes">&times;</button>
+        </div>
+
+        <div class="modal-body settings-body">
+          
+          <!-- Local Privacy Info Card -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <div class="settings-icon">🔒</div>
+              <div>
+                <h3>Modo 100% Local y Privado</h3>
+                <p>Tus datos financieros se guardan únicamente en el almacenamiento local de tu navegador. Sin servidores externos ni registros.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Backup / Import / Export Card -->
+          <div class="settings-card">
+            <div class="settings-card-header">
+              <div class="settings-icon">💾</div>
+              <div>
+                <h3>Copia de Seguridad y Datos</h3>
+                <p>Exporta tus gastos en un archivo JSON o restáuralos en cualquier momento.</p>
+              </div>
+            </div>
+
+            <div class="backup-actions-grid">
+              <button id="btn-export-json" class="btn btn-secondary btn-sm">
+                ⬇️ Exportar Copia (JSON)
+              </button>
+              <label class="btn btn-secondary btn-sm file-upload-label">
+                ⬆️ Restaurar Copia
+                <input type="file" id="input-import-json" accept=".json" style="display:none;">
+              </label>
+              <button id="btn-load-demo" class="btn btn-outline btn-sm">
+                ✨ Cargar Datos de Ejemplo
+              </button>
+              <button id="btn-clear-all" class="btn btn-danger-outline btn-sm">
+                🗑️ Borrar Todos los Datos
+              </button>
+            </div>
+          </div>
+
+          <!-- PWA Install Banner inside settings -->
+          <div id="pwa-install-container" class="settings-card hidden">
+            <div class="settings-card-header">
+              <div class="settings-icon">📲</div>
+              <div>
+                <h3>Instalar en tu Pantalla de Inicio</h3>
+                <p>Úsala como una aplicación nativa en tu móvil u ordenador sin barra de navegación.</p>
+              </div>
+            </div>
+            <button id="btn-install-pwa" class="btn btn-primary btn-sm" style="margin-top:10px;">
+              Instalar App
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Main Application Logic (100% Local) -->
+  <script src="app.js"></script>
+</body>
+</html>
